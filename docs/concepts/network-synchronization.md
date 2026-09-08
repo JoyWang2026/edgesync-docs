@@ -72,7 +72,7 @@ A device may have one or more configured sources.
 
 The device uses the configured synchronization mechanism to select or obtain timing information from an available source.
 
-## PTP Grandmaster
+### PTP Grandmaster
 
 A PTP Grandmaster provides precise time information using the Precision Time Protocol (PTP).
 
@@ -86,7 +86,7 @@ In EdgeSync, a PTP source includes information such as:
 - Source status
 - Last update time
 
-## NTP Server
+### NTP Server
 
 An NTP server provides time synchronization using the Network Time Protocol (NTP).
 
@@ -99,7 +99,7 @@ In EdgeSync, an NTP source includes information such as:
 - Source status
 - Last synchronization time
 
-## GNSS Clock
+### GNSS Clock
 
 A GNSS-based clock obtains timing information from a Global Navigation Satellite System.
 
@@ -130,7 +130,7 @@ Synchronization state alone may not provide enough information to diagnose a pro
 
 EdgeSync therefore exposes synchronization metrics that help engineers evaluate synchronization quality.
 
-## Offset
+### Offset
 
 Offset represents the time difference between a device clock and its reference.
 
@@ -150,7 +150,7 @@ A larger offset may indicate synchronization degradation or a problem with the s
 
 The acceptable offset range depends on the device, network design, and operational requirements.
 
-## Frequency Offset
+### Frequency Offset
 
 Frequency offset represents the difference between the device clock frequency and its reference.
 
@@ -168,7 +168,7 @@ For example:
 
 Frequency offset can help engineers determine whether a device clock is drifting relative to its reference.
 
-## Jitter
+### Jitter
 
 Jitter describes short-term variation in timing measurements.
 
@@ -185,7 +185,7 @@ For example:
 
 Jitter should be interpreted together with other synchronization metrics rather than as an isolated indicator.
 
-## Last Updated
+### Last Updated
 
 The `lastUpdated` field indicates when the synchronization information was most recently updated.
 
