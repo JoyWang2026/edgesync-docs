@@ -12,7 +12,7 @@ Network devices use clocks to coordinate operations and maintain consistent timi
 
 A device may obtain timing information from an external synchronization source, such as a PTP Grandmaster, NTP server, or GNSS-based clock.
 
-When synchronization is healthy, the device can maintain its clock within the expected accuracy range.
+When synchronization is operating normally, the device can maintain its clock within the expected accuracy range.
 
 When synchronization degrades or is lost, the device may enter a different synchronization state and eventually generate an alarm.
 
@@ -56,17 +56,19 @@ A simplified synchronization architecture is:
 
 The exact synchronization topology depends on the network design and the capabilities of the devices.
 
-EdgeSync focuses on monitoring the synchronization relationship rather than controlling the underlying physical timing infrastructure.
+EdgeSync focuses on monitoring synchronization information and relationships between network devices and their configured reference sources. It does not represent the underlying physical timing infrastructure.
 
 ## Synchronization Sources
 
-A synchronization source provides timing information to a network device.
+A synchronization source provides timing information that a network device uses as a reference.
 
 EdgeSync supports the following conceptual source types:
 
 - PTP Grandmaster
 - NTP Server
-- GNSS Clock
+- GNSS Reference
+
+These source types represent different levels of the synchronization architecture. A GNSS reference may provide timing to synchronization infrastructure, while PTP and NTP sources can provide timing information to network devices over the network.
 
 A device may have one or more configured sources.
 
@@ -99,28 +101,26 @@ In EdgeSync, an NTP source includes information such as:
 - Source status
 - Last synchronization time
 
-### GNSS Clock
+### GNSS Reference
 
-A GNSS-based clock obtains timing information from a Global Navigation Satellite System.
+A GNSS-based reference obtains timing information from a Global Navigation Satellite System.
 
-A GNSS clock can provide a reference for network synchronization infrastructure.
+A GNSS reference can provide a time or frequency reference to synchronization infrastructure, such as a PTP Grandmaster or other timing equipment.
 
 In EdgeSync, a GNSS source can be represented as a synchronization reference and monitored for availability and status.
 
 ## Synchronization State
 
-A synchronization state describes the current synchronization condition of a device.
-
-EdgeSync uses the following states:
+EdgeSync defines the following synchronization states for monitoring purposes:
 
 | State      | Description                                                                                           |
 | ---------- | ----------------------------------------------------------------------------------------------------- |
 | `LOCKED`   | The device is synchronized to an available reference source.                                          |
 | `HOLDOVER` | The device has temporarily lost its reference source but is maintaining timing using its local clock. |
 | `FREERUN`  | The device is operating without an active external synchronization reference.                         |
-| `FAILED`   | The device cannot maintain the expected synchronization condition.                                    |
+| `FAILED`   | EdgeSync determins that the device is no longer meeting the configured synchronization requirements.    |
 
-The state provides a high-level view of synchronization health.
+These states are EdgeSync monitoring states. The exact synchronization states reported by an underlying network device may vary by device implementation.
 
 For detailed information about each state, see [Synchronization States](synchronization-states.md).
 
@@ -148,7 +148,7 @@ For example:
 
 A larger offset may indicate synchronization degradation or a problem with the synchronization path.
 
-The acceptable offset range depends on the device, network design, and operational requirements.
+The acceptable offset range depends on the device, network design, and configured operational requirements.
 
 ### Frequency Offset
 
@@ -201,90 +201,34 @@ A stale update time may indicate that the device or synchronization source is no
 
 ## How EdgeSync Evaluates Synchronization
 
-At a high level, EdgeSync follows this process:
+At a high level, EdgeSync receives synchronization information from monitored network devices and makes the information available for monitoring and alarm management.
 
 ```text
 Network Device
       │
       │ Synchronization data
       ▼
-EdgeSync Collector
-      │
-      ▼
-Synchronization Service
+   EdgeSync
       │
       ├── Synchronization State
       ├── Active Source
       ├── Offset
       ├── Frequency Offset
-      └── Jitter
+      ├── Jitter
+      └── Last Updated
       │
-      ▼
-Monitoring
-      │
-      ├── Healthy
-      ├── Degraded
-      └── Failed
-      │
-      ▼
-Alarm Management
+      ├───────────────┐
+      ▼               ▼
+ Monitoring        Alarms   
 ```
 
-The monitoring service evaluates the information reported by network devices and makes it available through the EdgeSync user interface and REST API.
+EdgeSync uses the reported synchronization information and configured monitoring conditions to help identify degraded or failed synchronization.
 
-## Synchronization Degradation
-
-Synchronization problems can develop gradually or occur suddenly.
-
-For example, a device may transition through the following states:
-
-```text
-LOCKED
-   │
-   │ Reference becomes unavailable
-   ▼
-HOLDOVER
-   │
-   │ Holdover period expires
-   ▼
-FREERUN
-   │
-   │ Synchronization condition continues to degrade
-   ▼
-FAILED
-```
-
-The actual state transition depends on device behavior and configured operational thresholds.
-
-A state transition should be investigated together with synchronization metrics, source status, and related alarms.
-
-## Synchronization Monitoring
-
-Network engineers can use EdgeSync to monitor:
-
-- Current synchronization state
-- Active synchronization source
-- Clock offset
-- Frequency offset
-- Jitter
-- Last update time
-- Synchronization-related alarms
-
-A typical monitoring workflow is:
-
-1. Identify the affected device.
-2. Check the current synchronization state.
-3. Identify the active synchronization source.
-4. Review synchronization metrics.
-5. Check for related alarms.
-6. Investigate the synchronization path.
-7. Follow the appropriate troubleshooting procedure.
-
-For troubleshooting procedures, see [Troubleshooting](../troubleshooting/index.md).
+The monitoring information is available through the EdgeSync user interface and REST API.
 
 ## Example Synchronization Status
 
-The following example shows a device with a healthy synchronization condition:
+The following example shows a device that is currently in the `LOCKED` state:
 
 ```JSON
 {
@@ -308,9 +252,69 @@ In this example:
 - `jitterNs` represents short-term timing variation.
 - `lastUpdated` indicates when the information was last updated.
 
-## Synchronization Problems
+The example does not by itself indicate whether the reported metrics meet operational requirements. Those requirements depend on the configured thresholds and synchronization requirements of the device.
 
-Common synchronization problems include:
+## Interpreting Synchronization Data
+
+When investigating a synchronization issue, do not rely on a single metric.
+
+Use the synchronization state, active source, metrics, and alarms together.
+
+For example:
+
+| Observation | Possible indication |
+|---|---|
+| `LOCKED` with low offset | Synchronization is operating normally. |
+| `LOCKED` with increasing offset | Synchronization may be degrading. |
+| `HOLDOVER` with a recent source-loss alarm | The reference source may be unavailable. |
+| `FREERUN` | No active synchronization reference is currently available. |
+| `FAILED` | The device is not meeting the configured synchronization requirements. |
+
+These observations do not identify the root cause by themselves. Use the troubleshooting procedures to investigate the underlying problem.
+
+For example, a device may transition through the following states:
+
+```text
+LOCKED
+   │
+   │ Reference becomes unavailable
+   ▼
+HOLDOVER
+   │
+   │ Holdover period expires
+   ▼
+FREERUN
+   │
+   │ Synchronization condition continues to degrade
+   ▼
+FAILED
+```
+
+The actual state transition depends on device behavior and the synchronization conditions configured for the EdgeSync deployment.
+
+## Investigating Synchronization Issues
+
+Network engineers can use EdgeSync to monitor:
+
+- Current synchronization state
+- Active synchronization source
+- Clock offset
+- Frequency offset
+- Jitter
+- Last update time
+- Synchronization-related alarms
+
+A typical monitoring workflow is:
+
+1. Identify the affected device.
+2. Check the current synchronization state.
+3. Identify the active synchronization source.
+4. Review synchronization metrics.
+5. Check for related alarms.
+6. Investigate the synchronization path.
+7. Follow the appropriate troubleshooting procedure.
+
+For troubleshooting procedures, see [Troubleshooting](../troubleshooting/index.md).
 
 ### Synchronization Source Unavailable
 
@@ -346,43 +350,6 @@ The device can no longer maintain synchronization with its reference.
 The device may transition from `LOCKED` to `HOLDOVER` and eventually to another state if the reference is not restored.
 
 See [Synchronization Lost](../troubleshooting/synchronization-lost.md).
-
-## Relationship Between Synchronization Concepts
-
-The main EdgeSync synchronization concepts are related as follows:
-
-```text
-Synchronization Source
-          │
-          ▼
-    Timing Reference
-          │
-          ▼
-    Network Device
-          │
-          ▼
- Synchronization State
-          │
-          ├── LOCKED
-          ├── HOLDOVER
-          ├── FREERUN
-          └── FAILED
-          │
-          ▼
- Synchronization Metrics
-          │
-          ├── Offset
-          ├── Frequency Offset
-          └── Jitter
-          │
-          ▼
-      Monitoring
-          │
-          ▼
-        Alarms
-```
-
-Understanding these relationships helps engineers move from a high-level alarm to the underlying synchronization condition.
 
 ## Related Documentation
 
