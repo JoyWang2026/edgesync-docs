@@ -18,19 +18,14 @@ A typical PTP deployment includes:
 
 A simplified PTP synchronization path is:
 
-```text
-PTP Grandmaster
-       │
-       │ PTP messages
-       ▼
-Network Infrastructure
-       │
-       ▼
-Network Device
-       │
-       ▼
-Synchronized Clock
+```mermaid
+flowchart TD
+A[PTP Grandmaster]-->|PTP messages|B[Network Infrastructure]
+B-->C[Network Device]
+C-->D[Device Local Clock]
 ```
+
+The network device uses PTP information to synchronize its local clock with the reference provided by the Grandmaster.
 
 The PTP Grandmaster provides the reference time for the PTP domain.
 
@@ -82,18 +77,18 @@ PTP uses timestamped messages to allow devices to determine the timing relations
 
 A simplified two-step, end-to-end synchronization sequence is shown below:
 
-```text
-PTP Grandmaster              Network Device
-       │                           │
-       │──── Sync ────────────────►│
-       │──── Follow_Up ───────────►│
-       │                           │
-       │◄─── Delay_Req ───────────│
-       │                           │
-       │──── Delay_Resp ─────────►│
-       │                           │
-       ▼                           ▼
-Reference time              Local clock adjusted
+```mermaid
+sequenceDiagram
+    participant GM as PTP Grandmaster
+    participant DEV as Network Device
+
+    GM->>DEV: Sync
+    GM->>DEV: Follow_Up
+    DEV->>GM: Delay_Req
+    GM->>DEV: Delay_Resp
+
+    Note over GM: Reference time
+    Note over DEV: Local clock synchronized
 ```
 
 The exact message exchange depends on the PTP profile and device implementation.
@@ -211,21 +206,14 @@ The monitoring model may include:
 
 A simplified monitoring flow is:
 
-```text
-PTP Grandmaster
-       │
-       │ PTP synchronization
-       ▼
-Network Device
-       │
-       │ Synchronization data
-       ▼
-EdgeSync
-       │
-       ├── Synchronization state
-       ├── Active source
-       ├── Metrics
-       └── Alarms
+```mermaid
+flowchart TD
+A[PTP Grandmaster]-->|PTP synchronization|B[Network Device]
+B-->|Synchronization data|C[EdgeSync]
+C-->D[Synchronization State]
+C-->E[Active Source]
+C-->F[Metrics]
+C-->G[Alarms]
 ```
 
 EdgeSync uses this information to provide a centralized view of synchronization conditions across monitored devices.
