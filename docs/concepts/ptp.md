@@ -32,7 +32,7 @@ Network Device
 Synchronized Clock
 ```
 
-The PTP Grandmaster is the primary timing reference in this model.
+The PTP Grandmaster provides the reference time for the PTP domain.
 
 EdgeSync monitors the synchronization information reported by supported network devices rather than acting as the PTP Grandmaster itself.
 
@@ -59,7 +59,7 @@ The PTP Grandmaster provides the reference time used by devices in a PTP domain.
 
 A network may have more than one potential Grandmaster. When multiple candidates are available, the PTP system determines which clock should serve as the Grandmaster according to its clock-selection mechanism.
 
-For EdgeSync, the selected Grandmaster is an important part of the synchronization context.
+For EdgeSync, the selected Grandmaster is an important part of the synchronization context because changes in the active reference can affect synchronization state and metrics.
 
 For example:
 
@@ -80,7 +80,7 @@ EdgeSync can use information reported by monitored devices to identify the synch
 
 PTP uses timestamped messages to allow devices to determine the timing relationship between their local clocks and the reference clock.
 
-A simplified synchronization sequence is:
+A simplified two-step, end-to-end synchronization sequence is shown below:
 
 ```text
 PTP Grandmaster              Network Device
@@ -123,6 +123,8 @@ A profile may define or constrain aspects of PTP behavior, such as:
 - Synchronization performance requirements
 
 EdgeSync should treat the PTP profile as part of the device and network configuration rather than assuming that every PTP deployment uses the same settings.
+
+The configured PTP profile can affect how synchronization behavior and metrics should be interpreted.
 
 ## PTP Synchronization Metrics
 
@@ -171,9 +173,9 @@ Frequency offset can help engineers determine whether a device clock is consiste
 
 Jitter represents variation in synchronization timing measurements over time.
 
-Higher jitter may indicate unstable synchronization conditions or variation in the network timing path.
+Higher jitter may indicate increased variation in the timing measurements or instability in the synchronization path.
 
-The interpretation of jitter depends on the device implementation and configured monitoring requirements.
+The exact meaning and calculation of jitter depend on the device implementation and monitoring model.
 
 ## PTP and Synchronization State
 
@@ -300,25 +302,15 @@ The exact cause depends on the device, network topology, and PTP configuration.
 When investigating a PTP synchronization problem, use the following workflow:
 
 ```text
-PTP synchronization problem
-            │
-            ▼
-Check synchronization state
-            │
-            ▼
-Identify active PTP source
-            │
-            ▼
-Check source availability
-            │
-            ▼
-Review PTP metrics
-            │
-            ▼
-Check alarms and events
-            │
-            ▼
-Review configuration and network path
+PTP problem
+   ↓
+Check state and active source
+   ↓
+Review metrics
+   ↓
+Check alarms
+   ↓
+Follow troubleshooting workflow
 ```
 
 Start with the synchronization state and active source before investigating individual metrics.
@@ -327,7 +319,7 @@ For a general troubleshooting workflow, see the troubleshooting documentation.
 
 ## Related Documentation
 
-- [Network Synchronization](netowork-synchronization.md)
+- [Network Synchronization](network-synchronization.md)
 - [Synchronization States](synchronization-states.md)
 - [Synchronization Sources](synchronization-sources.md)
 - [NTP](ntp.md)
