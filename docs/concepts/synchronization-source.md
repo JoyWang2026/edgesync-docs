@@ -10,15 +10,18 @@ This document describes the synchronization source concepts used by EdgeSync. It
 
 A network device may use one or more synchronization sources.
 
-EdgeSync supports the following source types:
+EdgeSync monitors network synchronization sources and associated timing references configured for the synchronization infrastructure.
+
+EdgeSync supports the following network synchronization source types:
 
 | Source type | Description | Typical use |
 |---|---|---|
 | PTP Grandmaster | Provides precise timing to network devices using Precision Time Protocol (PTP). | High-precision network synchronization |
 | NTP Server | Provides time synchronization using Network Time Protocol (NTP). | General-purpose time synchronization |
-| GNSS Reference | Provides timing information derived from a Global Navigation Satellite System (GNSS) reference. | High-accuracy timing reference for synchronization infrastructure |
 
-A device may have multiple configured sources. EdgeSync monitors these sources and identifies which source is currently active.
+A synchronization infrastructure may also use a GNSS reference to provide a highly accurate timing reference to a clock or synchronization device.
+
+A device may have multiple configured synchronization sources. EdgeSync monitors these sources and identifies which source is currently active.
 
 ## Source Types
 
@@ -55,9 +58,25 @@ For detailed information about NTP, see [NTP](ntp.md).
 
 A GNSS reference provides timing information derived from satellite-based positioning systems.
 
-GNSS can provide a highly accurate reference for synchronization infrastructure. In a network environment, a GNSS reference may feed timing information into a clock or synchronization device, which then provides timing to other network devices.
+GNSS can provide a highly accurate timing reference for synchronization infrastructure. In a network environment, a GNSS reference may provide timing information to a clock or synchronization device, which then provides timing to other network devices.
 
-EdgeSync treats the GNSS reference as a synchronization reference associated with the monitored synchronization infrastructure.
+In EdgeSync, GNSS is treated as a timing reference associated with the synchronization infrastructure rather than as a network synchronization protocol.
+
+## Synchronization Source Model
+
+Synchronization sources and timing references may play different roles in a network synchronization infrastructure.
+
+```mermaid
+flowchart LR
+    GNSS[GNSS Reference] --> CLOCK[Timing Infrastructure]
+
+    CLOCK --> PTP[PTP Grandmaster]
+
+    PTP --> DEVICE[Network Device]
+    NTP[NTP Server] --> DEVICE
+```
+
+In this model, a GNSS reference provides timing to synchronization infrastructure, while a PTP Grandmaster or NTP Server provides synchronization to a network device.
 
 ## Active Synchronization Source
 
@@ -92,7 +111,7 @@ In this example, `ptp-gm-01` is the active synchronization source.
 
 ## Primary and Secondary Sources
 
-A device may be configured with multiple synchronization sources to improve availability.
+A device may be configured with multiple synchronization sources to improve synchronization availability.
 
 A typical configuration may include:
 
@@ -101,21 +120,12 @@ A typical configuration may include:
 
 If the primary source becomes unavailable, the device may select another available source according to its configured source-selection rules.
 
-For example:
+For example, a device may fail over from a primary PTP Grandmaster to a secondary PTP Grandmaster:
 
-```
-Primary source
-ptp-gm-01
-      │
-      │ unavailable
-      ▼
-Secondary source
-ptp-gm-02
-      │
-      │ available
-      ▼
-Active synchronization source
-ptp-gm-02
+```mermaid
+flowchart TD
+A[Primary Source]-->|Unavailable|B[Secondary Source]
+B-->|Available|C[Active Synchronization Source]
 ```
 
 The exact source-selection behavior depends on the device and its configuration.
@@ -146,7 +156,6 @@ Source selection may depend on factors such as:
 
 - Source availability
 - Source priority
-- Source quality
 - Device configuration
 - Synchronization protocol
 
@@ -168,32 +177,24 @@ The monitoring information may include:
 - Last update time
 - Related alarms
 
-This information helps network engineers determine whether a synchronization problem is related to the timing source.
+This information helps network engineers determine whether a synchronization problem is related to the active synchronization source or its availability.
 
 For example:
 
-```
-Synchronization problem
-        │
-        ▼
-Check synchronization state
-        │
-        ▼
-Identify active source
-        │
-        ▼
-Check source status
-        │
-        ├── Available ──► Review metrics and configuration
-        │
-        └── Unavailable ─► Investigate source availability
+```mermaid
+flowchart TD
+A[Synchronization problem]-->B[Check synchronization state]
+B-->C[Identify active source]
+C-->D[Check source status]
+D-->|Available|E[Review metrics and configuration]
+D-->|Unavailable|F[Investigate source availability]
 ```
 
 ## Example Synchronization Source
 
 The following example shows a synchronization source returned by the EdgeSync API:
 
-```JSON
+```json
 {
   "id": "ptp-gm-01",
   "name": "Primary PTP Grandmaster",
@@ -236,6 +237,6 @@ If the device is using an unexpected synchronization source:
 - [Network Synchronization](network-synchronization.md)
 - [Synchronization States](synchronization-states.md)
 - [PTP](ptp.md)
-- [NTP](ntpmmd)
+- [NTP](ntp.md)
 - [Configure a Synchronization Source](../administrator/configure-source.md)
 - [Synchronization Source Unavailable](../troubleshooting/source-unavailable.md)
