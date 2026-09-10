@@ -225,27 +225,6 @@ When a device enters `FAILED`:
 
 See [Troubleshooting](../troubleshooting/index.md) for additional guidance.
 
-## State Transitions
-
-The synchronization state can change when the availability or quality of the synchronization reference changes.
-
-A typical sequence is:
-
-```mermaid
-flowchart LR
-    A[LOCKED] --> B[HOLDOVER]
-    B --> C[FREERUN]
-    C --> D[FAILED]
-
-    B -->|Reference restored| A
-    C -->|Reference restored| A
-    D -->|Synchronization restored| A
-```
-
-The sequence should not be interpreted as a universal state machine for all network devices.
-
-EdgeSync uses these states as a monitoring abstraction. Actual device behavior may include additional states or different transition rules.
-
 ## Monitoring State vs. Root Cause
 
 A synchronization state describes **what is happening**, but it does not necessarily explain **why it is happening**.
@@ -333,7 +312,7 @@ flowchart TD
     C --> D[Check recent alarms and events]
     D --> E{Source available?}
     
-    E -->|Yes| F[Check configuration and metrics]
+    E -->|Yes| F[Check source configuration]
     E -->|No| G[Investigate source availability]
     
     F --> H[Continue troubleshooting]
