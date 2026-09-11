@@ -62,13 +62,12 @@ EdgeSync focuses on monitoring synchronization information and relationships bet
 
 A synchronization source provides timing information that a network device uses as a reference.
 
-EdgeSync supports the following conceptual source types:
+EdgeSync monitors the following synchronization source types:
 
 - PTP Grandmaster
 - NTP Server
-- GNSS Reference
 
-These source types represent different levels of the synchronization architecture. A GNSS reference may provide timing to synchronization infrastructure, while PTP and NTP sources can provide timing information to network devices over the network.
+A GNSS reference may also be part of the synchronization infrastructure. It can provide timing information to a PTP Grandmaster, clock, or other timing equipment.
 
 A device may have one or more configured sources.
 
@@ -107,7 +106,7 @@ A GNSS-based reference obtains timing information from a Global Navigation Satel
 
 A GNSS reference can provide a time or frequency reference to synchronization infrastructure, such as a PTP Grandmaster or other timing equipment.
 
-In EdgeSync, a GNSS source can be represented as a synchronization reference and monitored for availability and status.
+In EdgeSync, a GNSS reference is treated as part of the synchronization infrastructure rather than as a network synchronization protocol.
 
 ## Synchronization State
 
@@ -118,7 +117,7 @@ EdgeSync defines the following synchronization states for monitoring purposes:
 | `LOCKED`   | The device is synchronized to an available reference source.                                          |
 | `HOLDOVER` | The device has temporarily lost its reference source but is maintaining timing using its local clock. |
 | `FREERUN`  | The device is operating without an active external synchronization reference.                         |
-| `FAILED`   | EdgeSync determins that the device is no longer meeting the configured synchronization requirements.    |
+| `FAILED`   | EdgeSync determines that the device is no longer meeting the configured synchronization requirements.    |
 
 These states are EdgeSync monitoring states. The exact synchronization states reported by an underlying network device may vary by device implementation.
 
@@ -246,7 +245,7 @@ In this example:
 
 - `edge-001` is the monitored device.
 - `LOCKED` indicates that the device is synchronized to a reference.
-- `ptp-gm-01` is the active synchronization source.
+- `ptp-gm-01` is the currently active synchronization source.
 - `offsetNs` is the measured clock offset.
 - `frequencyOffsetPpb` is the measured frequency offset.
 - `jitterNs` represents short-term timing variation.
@@ -357,5 +356,4 @@ See [Synchronization Lost](../troubleshooting/synchronization-lost.md).
 - [Synchronization Sources](synchronization-sources.md)
 - [PTP](ptp.md)
 - [NTP](ntp.md)
-- [Monitoring Model](monitoring-model.md)
 - [Troubleshooting](../troubleshooting/index.md)
