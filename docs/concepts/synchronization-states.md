@@ -89,7 +89,6 @@ During holdover, the device attempts to maintain timing without receiving curren
 A device in the `HOLDOVER` state may show:
 
 - No currently usable synchronization source
-- A previous synchronization source
 - Increasing frequency or phase error
 - A synchronization-source alarm
 - A recent source-loss event
@@ -100,7 +99,7 @@ Example:
 {
   "deviceId": "edge-001",
   "state": "HOLDOVER",
-  "source": "ptp-gm-01",
+  "source": null,
   "offsetNs": 180,
   "frequencyOffsetPpb": 2.4,
   "jitterNs": 25,
@@ -327,7 +326,6 @@ This workflow provides a general investigation path. The appropriate troubleshoo
 - [Synchronization Sources](synchronization-sources.md)
 - [PTP](ptp.md)
 - [NTP](ntp.md)
-- [Monitoring Model](monitoring-model.md)
 - [Synchronization Source Unavailable](../troubleshooting/source-unavailable.md)
 - [PTP Offset Too High](../troubleshooting/high-ptp-offset.md)
 - [Synchronization Lost](../troubleshooting/synchronization-lost.md)
