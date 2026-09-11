@@ -107,7 +107,7 @@ Example:
 }
 ```
 
-In this example, `ptp-gm-01` is the active synchronization source.
+In this example, `ptp-gm-01` is the currently active synchronization source.
 
 ## Primary and Secondary Sources
 
@@ -117,6 +117,9 @@ A typical configuration may include:
 
 - A primary source
 - One or more secondary sources
+
+> **Note:**  
+> "Primary source" describes source priority in the EdgeSync monitoring model. It does not define the PTP role of the source.
 
 If the primary source becomes unavailable, the device may select another available source according to its configured source-selection rules.
 
