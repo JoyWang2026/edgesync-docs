@@ -1,38 +1,46 @@
 # EdgeSync Architecture
 
-This document describes the high-level architecture of EdgeSync and the relationship between its main components.
+This document describes the high-level architecture of EdgeSync and the relationship between its main components and the external network environment.
 
-EdgeSync is a network synchronization monitoring and management platform. It provides a web interface and REST API for managing devices,monitoring synchronization, and managing alarms.
+EdgeSync is a network synchronization monitoring and management platform. It helps network administrators and engineers monitor synchronization sources, configure PTP/NTP settings, investigate synchronization issues, and manage network alarms.
 
-This document focuses on the logical architecture and component responsibilities. It does not describe the detailed implementation of PTP, NTP, or individual API operations.
+## Scope
+
+This document focuses on the logical architecture of EdgeSync, including:
+
+- major architecture layers
+- main software components
+- responsibility boundaries
+- high-level data flow
+- relationship between EdgeSync and the external network environment
+
+Detailed protocol behavior, API definitions, database schemas, and device-specific implementation are outside the scope of this document.
 
 ---
 
 ## Architecture Overview
 
-EdgeSync uses a web-based architecture with a REST API and services that manage devices, synchronization information, and alarms.
+EdgeSync uses a layered web-based architecture. Users interact with the platform through the Web UI or REST API. The backend separates device management, synchronization management, and alarm management into dedicated services.
 
 ```mermaid
 flowchart TB
 
-  subgraph Clients
+    subgraph Clients
         Admin[Network Administrator]
         Engineer[Network Engineer]
         Developer[External Application]
     end
 
- subgraph EdgeSync["EdgeSync Platform"]
+    subgraph EdgeSync["EdgeSync Platform"]
         UI[Web UI<br/>React SPA]
         API[REST API<br/>FastAPI]
-
         Device[Device Service]
         Sync[Synchronization Service]
         Alarm[Alarm Service]
-
         DB[(PostgreSQL)]
     end
 
-  subgraph Network["External Network Environment"]
+    subgraph Network["External Network Environment"]
         Devices[Network Devices]
         PTP[PTP Grandmaster]
         NTP[NTP Server]
@@ -41,253 +49,115 @@ flowchart TB
     Admin --> UI
     Engineer --> UI
     Developer --> API
-
     UI --> API
-
     API --> Device
     API --> Sync
     API --> Alarm
-
     Device --> DB
     Sync --> DB
     Alarm --> DB
-
     PTP --> Devices
     NTP --> Devices
-
     Devices --> Device
     Devices --> Sync
 ```
-The architecture separates the user interface, API layer, application services, data storage, and monitored network environment.
+
+The architecture separates the EdgeSync platform from the external network environment. Network devices perform the underlying synchronization behavior, while EdgeSync collects and manages the resulting device and synchronization information.
 
 ---
 
-## Main Components
+## Architecture Layers
 
-| Component               | Responsibility                                                        | Primary Interface                     |
-| ----------------------- | --------------------------------------------------------------------- | ------------------------------------- |
-| Web UI                  | Provides the user interface for managing and monitoring EdgeSync.     | REST API                              |
-| REST API                | Provides programmatic access to EdgeSync resources and operations.    | HTTP/REST                             |
-| Device Service          | Manages network device information and device-related operations.     | REST API / internal services          |
-| Synchronization Service | Manages synchronization sources and synchronization monitoring data.  | REST API / internal services          |
-| Alarm Service           | Manages alarms and their lifecycle.                                   | REST API / internal services          |
-| PostgreSQL              | Stores EdgeSync application data.                                     | Application services                  |
-| Network Devices         | Provide device and synchronization information monitored by EdgeSync. | Network protocols / device interfaces |
+### Client Layer
 
+The Client Layer provides access to EdgeSync.
 
----
+It includes:
 
-## Web UI
+- Web UI for network administrators and network engineers
+- External applications that access the REST API
 
-The Web UI provides the primary interface for network administrators and network engineers to manage and monitor EdgeSync.
+The Web UI is implemented as a React-based single-page application (SPA).
 
-The Web UI is implemented as a React-based single-page application (SPA) and communicates with the backend through the REST API.
+### API Layer
 
-The Web UI provides access to functions such as:
+The API Layer provides programmatic access to EdgeSync resources.
 
-- Dashboard
-- Device management
-- Synchronization monitoring
-- Synchronization source configuration
-- Alarm management
-- Administration
+The REST API is implemented using FastAPI and provides a consistent interface for the Web UI and external applications.
 
-For detailed user workflows, see the Administrator Guide.
+### Service Layer
 
----
+The Service Layer contains the main application services:
 
-## REST API
+- Device Service
+- Synchronization Service
+- Alarm Service
 
-The REST API provides programmatic access to EdgeSync resources.
+Each service owns a specific area of EdgeSync functionality.
 
-The API is implemented using FastAPI and exposes resources for:
+### Data Layer
 
-- Devices
-- Synchronization
-- Synchronization Sources
-- Alarms
+The Data Layer uses PostgreSQL to store EdgeSync application data, such as:
 
-The Web UI also uses the REST API to communicate with backend services.
+- network devices
+- synchronization sources
+- synchronization monitoring information
+- alarms
+- users
+- configuration
 
-See the Developer Guide and API Reference for details about API operations.
+The detailed database schema is outside the scope of this document.
 
----
+### External Network Environment
 
-## Device Service
+The External Network Environment contains the network devices and synchronization infrastructure monitored by EdgeSync.
 
-The Device Service manages network device information.
-
-Typical responsibilities include:
-
-- Registering devices
-- Retrieving device information
-- Updating device configuration
-- Removing devices
-- Reporting device status
-
-The Device Service provides the device-related functionality used by the Web UI and REST API.
-
-The Device Service does not implement the underlying synchronization protocol used by a network device.
-
----
-
-## Synchronization Service
-
-The Synchronization Service manages synchronization-related information and synchronization source configuration.
-
-Typical responsibilities include:
-
-- Managing synchronization sources
-- Monitoring synchronization information
-- Reporting Synchronization State
-- Providing synchronization metrics
-- Identifying the Active Synchronization Source
-
-The Synchronization Service represents synchronization information reported by monitored network devices. It does not replace the underlying synchronization mechanism implemented by those devices.
-
----
-
-## Alarm Service
-
-The Alarm Service manages alarms generated from monitored conditions.
-
-Typical responsibilities include:
-
-- Creating alarms
-- Retrieving active alarms
-- Retrieving alarm history
-- Acknowledging alarms
-- Clearing alarms
-
-The Alarm Service manages the alarm lifecycle but does not determine the root cause of every synchronization problem.
-
----
-
-## PostgreSQL
-
-PostgreSQL stores EdgeSync application data.
-
-The database may contain information related to:
-
-- Network devices
-- Synchronization sources
-- Synchronization monitoring data
-- Alarms
-- Users
-- Configuration
-
-The exact database schema is outside the scope of this architecture document.
-
----
-
-## Network Devices
-
-Network devices are the systems whose synchronization information is monitored by EdgeSync.
-
-Examples in the EdgeSync model include:
+Examples include:
 
 - gNB
 - Router
 - PTP-capable network device
 - Timing device
-
-The monitored device may use different synchronization mechanisms depending on its configuration.
-
-For example:
-
-```mermaid
-flowchart TD
-A[PTP Grandmaster]-->|PTP|B[Network Device]
-B-->|Synchronization Information|C[EdgeSync]
-```
-
-Or:
-
-```mermaid
-flowchart TD
-A[NTP Server]-->|NTP|B[Network Device]
-B-->|Synchronization Information|C[EdgeSync]
-```
-
-EdgeSync monitors the synchronization condition reported by the network device.
-
----
-
-## Synchronization Sources
-
-A Synchronization Source is a source that a network device uses as a reference for synchronization.
-
-In EdgeSync, the primary network synchronization source types are:
-
 - PTP Grandmaster
 - NTP Server
 
-A GNSS Reference is modeled as a timing reference within the synchronization infrastructure rather than as a network synchronization source.
-
-The relationship can be represented as:
-
-```mermaid
-flowchart LR
-    GNSS[GNSS Reference]
-    GM[PTP Grandmaster]
-    NTP[NTP Server]
-    Device[Network Device]
-
-    GNSS --> GM
-    GM --> Device
-    NTP --> Device
-```
-
-For detailed source configuration and source selection behavior, see [Synchronization Sources](synchronization-sources.md).
+The external network environment performs the underlying synchronization mechanisms. EdgeSync monitors and manages information associated with that environment.
 
 ---
 
-## Synchronization Monitoring
+## Main Components
 
-EdgeSync separates the underlying synchronization mechanism from its monitoring model.
-
-Network devices perform synchronization using their configured mechanism, such as PTP or NTP. EdgeSync monitors the synchronization information reported by those devices.
-
-The monitoring model includes:
-
-- Synchronization State
-- Active Synchronization Source
-- Synchronization Metrics
-- Last Update Time
-- Alarms
-
-See [Monitoring Model](monitoring-model.md) for details.
+| Component | Responsibility |
+|---|---|
+| **Web UI** | Provides the user interface for administrators and engineers. |
+| **REST API** | Provides programmatic access to EdgeSync resources and operations. |
+| **Device Service** | Manages network device information and device-related operations. |
+| **Synchronization Service** | Manages synchronization sources and synchronization monitoring information. |
+| **Alarm Service** | Manages the lifecycle of monitoring alarms. |
+| **PostgreSQL** | Stores EdgeSync application data. |
+| **Network Devices** | Perform underlying device and synchronization functions and provide information monitored by EdgeSync. |
 
 ---
 
-## Synchronization State
+## Responsibility Boundaries
 
-EdgeSync uses a common Synchronization State model to represent the synchronization condition of a monitored network device.
+| Component | Owns | Does not define |
+|---|---|---|
+| Web UI | User interaction and presentation | Underlying synchronization protocol behavior |
+| REST API | API access to EdgeSync resources | Device-specific synchronization behavior |
+| Device Service | Device management | Synchronization protocol implementation |
+| Synchronization Service | Synchronization monitoring and source management | The device's underlying synchronization mechanism |
+| Alarm Service | Alarm lifecycle management | The root cause of every synchronization problem |
+| PostgreSQL | Application data storage | Synchronization behavior |
+| Network Device | Underlying device and synchronization behavior | EdgeSync's monitoring model |
 
-The supported states are:
-
-- `LOCKED`
-- `HOLDOVER`
-- `FREERUN`
-- `FAILED`
-
-These states describe the synchronization condition rather than the root cause of a problem.
-
-See [Synchronization States](synchronization-states.md) for definitions and state-specific behavior.
-
----
-
-## Source Status and Synchronization State
-
-EdgeSync distinguishes source availability from device synchronization condition.
-
-See [Monitoring Model](monitoring-model.md) for details.
+These boundaries help keep the product architecture and documentation model clear.
 
 ---
 
 ## Data Flow
 
-The following simplified flow shows how information moves through EdgeSync:
+The following diagram shows the simplified flow of information through EdgeSync.
 
 ```mermaid
 flowchart LR
@@ -295,59 +165,43 @@ flowchart LR
     User[User]
     UI[Web UI]
     API[REST API]
-
     DS[Device Service]
     SS[Synchronization Service]
     AS[Alarm Service]
-
     DB[(PostgreSQL)]
     Network[Network Devices]
 
     User --> UI
     UI --> API
-
     API --> DS
     API --> SS
     API --> AS
-
     Network --> DS
     Network --> SS
-
     DS --> DB
     SS --> DB
     AS --> DB
-
     DB --> DS
     DB --> SS
     DB --> AS
 ```
 
----
+At a high level:
 
-## Responsibility Boundaries
-
-The following table summarizes the primary responsibility boundaries.
-
-| Component               | Owns                       | Does not own               |
-| ----------------------- | -------------------------- | -------------------------- |
-| Device Service          | Device management          | Synchronization protocol   |
-| Synchronization Service | Synchronization monitoring | Underlying synchronization |
-| Alarm Service           | Alarm lifecycle            | Root-cause diagnosis       |
-| Network Device          | Synchronization behavior   | EdgeSync monitoring model  |
+1. A user interacts with EdgeSync through the Web UI, or an external application accesses the REST API.
+2. The API routes requests to the appropriate application service.
+3. Device and synchronization services collect or manage information associated with network devices.
+4. Application services store and retrieve EdgeSync data in PostgreSQL.
+5. The Web UI presents the resulting information to users.
 
 ---
 
 ## Synchronization Architecture
 
-The synchronization source provides timing information to the network device.
-
-The network device performs the underlying synchronization.
-
-EdgeSync monitors and manages the resulting synchronization information.
+EdgeSync does not replace the synchronization mechanisms implemented by network devices.
 
 ```mermaid
 flowchart LR
-
     Source[PTP Grandmaster / NTP Server]
     Device[Network Device]
     EdgeSync[EdgeSync]
@@ -358,24 +212,37 @@ flowchart LR
     User -->|Configure / Monitor / Troubleshoot| EdgeSync
 ```
 
+In this model:
+
+- A **PTP Grandmaster** provides reference timing within a PTP environment.
+- An **NTP Server** provides time synchronization information using NTP.
+- A **Network Device** performs the underlying synchronization behavior.
+- **EdgeSync** monitors and manages synchronization information.
+- The **User** uses EdgeSync to configure, monitor, and troubleshoot the environment.
+
+A GNSS Reference may provide timing within the broader synchronization infrastructure, but it is modeled separately from the network synchronization source types.
+
 ---
 
-# Architecture Boundaries
+## Architecture Boundaries
 
-This document focuses on the logical architecture of EdgeSync.
-
-| In scope                   | Out of scope                           |
-| -------------------------- | -------------------------------------- |
-| Logical architecture       | Detailed PTP protocol behavior         |
-| Component responsibilities | Detailed NTP protocol behavior         |
-| Component relationships    | Device-specific implementation         |
-| High-level data flow       | Database schema                        |
-| EdgeSync/network boundary  | Authentication implementation          |
-| Monitoring architecture    | Performance/scalability specifications |
+| Topic | In Scope | Out of Scope |
+|---|---|---|
+| Product architecture | Logical components and relationships | Detailed deployment topology |
+| Web UI | Role in the architecture | Detailed UI design |
+| REST API | Role as the API layer | Complete API definitions |
+| Services | High-level responsibilities | Internal implementation details |
+| Database | Role as application data storage | Complete database schema |
+| Network environment | Relationship with EdgeSync | Device-specific implementation |
+| PTP/NTP | High-level architectural relationship | Detailed protocol behavior |
+| Synchronization monitoring | High-level monitoring role | Detailed monitoring model |
+| Alarms | High-level alarm service role | Detailed alarm lifecycle rules |
 
 ---
 
 ## Related Documentation
+
+For detailed information, see:
 
 - [Network Synchronization](network-synchronization.md)
 - [Synchronization States](synchronization-states.md)
@@ -383,15 +250,16 @@ This document focuses on the logical architecture of EdgeSync.
 - [PTP](ptp.md)
 - [NTP](ntp.md)
 - [Monitoring Model](monitoring-model.md)
-- [Developer Guide](../developer/api-overview.md)
+
+Developer documentation and API definitions are maintained separately in the Developer Guide and API Reference.
 
 ---
 
 ## Key Takeaways
 
-- EdgeSync is a synchronization monitoring and management platform.
-- The Web UI communicates with backend services through the REST API.
-- Device, synchronization, and alarm functions are separated into dedicated services.
+- EdgeSync is a web-based synchronization monitoring and management platform.
+- The Web UI and external applications access EdgeSync through the REST API.
+- The backend separates device management, synchronization management, and alarm management into dedicated services.
 - PostgreSQL stores EdgeSync application data.
-- Network devices perform the underlying synchronization, while EdgeSync monitors the resulting information.
+- Network devices perform the underlying synchronization mechanisms, while EdgeSync monitors and manages the resulting information.
 - PTP Grandmasters and NTP Servers are the primary network synchronization source types in the EdgeSync model.
