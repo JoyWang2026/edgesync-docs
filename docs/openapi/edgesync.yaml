@@ -2,26 +2,28 @@ openapi: 3.1.0
 info:
   title: EdgeSync API
   version: 1.0.0
-  description: |
-    REST API for EdgeSync network synchronization monitoring and management.
-    The conceptual meaning of monitoring data is defined in
-    docs/reference/monitoring-data-model.md.
+  description: 'REST API for EdgeSync network synchronization monitoring and management.
+
+    The conceptual meaning of Device data is defined in docs/reference/device-data-model.md.
+
+    The conceptual meaning of monitoring data is defined in docs/reference/monitoring-data-model.md.
+
+    The proposed Alarm model is defined in docs/reference/alarm-model.md.'
 servers:
-  - url: https://api.example.com
-    description: Example server
-
+- url: https://api.example.com
+  description: Example server
 tags:
-  - name: Devices
-    description: Network device management.
-  - name: Synchronization
-    description: Synchronization status and source management.
-  - name: Alarms
-    description: Alarm retrieval and lifecycle operations.
-
+- name: Devices
+  description: Network device management.
+- name: Synchronization
+  description: Synchronization status and source management.
+- name: Alarms
+  description: Alarm retrieval and lifecycle operations.
 paths:
   /api/v1/devices:
     get:
-      tags: [Devices]
+      tags:
+      - Devices
       summary: List devices
       operationId: listDevices
       responses:
@@ -33,32 +35,40 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Device'
-        '401': { $ref: '#/components/responses/Unauthorized' }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
     post:
-      tags: [Devices]
+      tags:
+      - Devices
       summary: Register a device
       operationId: createDevice
       requestBody:
         required: true
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/DeviceCreate' }
+            schema:
+              $ref: '#/components/schemas/DeviceCreate'
       responses:
         '201':
           description: Device registered.
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Device' }
-        '400': { $ref: '#/components/responses/InvalidRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '409': { $ref: '#/components/responses/ResourceConflict' }
-        '422': { $ref: '#/components/responses/InvalidConfiguration' }
-
+              schema:
+                $ref: '#/components/schemas/Device'
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/ResourceConflict'
+        '422':
+          $ref: '#/components/responses/InvalidConfiguration'
   /api/v1/devices/{deviceId}:
     parameters:
-      - $ref: '#/components/parameters/DeviceId'
+    - $ref: '#/components/parameters/DeviceId'
     get:
-      tags: [Devices]
+      tags:
+      - Devices
       summary: Get a device
       operationId: getDevice
       responses:
@@ -66,55 +76,75 @@ paths:
           description: Device information.
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Device' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '404': { $ref: '#/components/responses/DeviceNotFound' }
+              schema:
+                $ref: '#/components/schemas/Device'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/DeviceNotFound'
     patch:
-      tags: [Devices]
+      tags:
+      - Devices
       summary: Update a device
       operationId: updateDevice
       requestBody:
         required: true
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/DeviceUpdate' }
+            schema:
+              $ref: '#/components/schemas/DeviceUpdate'
       responses:
         '200':
           description: Device updated.
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Device' }
-        '400': { $ref: '#/components/responses/InvalidRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '404': { $ref: '#/components/responses/DeviceNotFound' }
-        '422': { $ref: '#/components/responses/InvalidConfiguration' }
+              schema:
+                $ref: '#/components/schemas/Device'
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/DeviceNotFound'
+        '422':
+          $ref: '#/components/responses/InvalidConfiguration'
     delete:
-      tags: [Devices]
+      tags:
+      - Devices
       summary: Remove a device
       operationId: deleteDevice
       responses:
-        '204': { description: Device removed. }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '404': { $ref: '#/components/responses/DeviceNotFound' }
-        '409': { $ref: '#/components/responses/ResourceConflict' }
-
+        '204':
+          description: Device removed.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/DeviceNotFound'
+        '409':
+          $ref: '#/components/responses/ResourceConflict'
   /api/v1/devices/{deviceId}/synchronization:
     parameters:
-      - $ref: '#/components/parameters/DeviceId'
+    - $ref: '#/components/parameters/DeviceId'
     get:
-      tags: [Synchronization]
+      tags:
+      - Synchronization
       summary: Get synchronization status
       operationId: getSynchronizationStatus
-      description: |
-        Returns the current synchronization information for a monitored device.
+      description: 'Returns the current synchronization information for a monitored
+        device.
+
         `source` is the current active synchronization source and is null when
+
         no active source is available. It is not a historical-source field.
+
+        '
       responses:
         '200':
           description: Current synchronization status.
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/SynchronizationStatus' }
+              schema:
+                $ref: '#/components/schemas/SynchronizationStatus'
               example:
                 deviceId: edge-001
                 state: LOCKED
@@ -123,12 +153,14 @@ paths:
                 frequencyOffsetPpb: 0.8
                 jitterNs: 12
                 lastUpdated: '2026-09-08T08:30:00Z'
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '404': { $ref: '#/components/responses/DeviceNotFound' }
-
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/DeviceNotFound'
   /api/v1/synchronization/sources:
     get:
-      tags: [Synchronization]
+      tags:
+      - Synchronization
       summary: List synchronization sources
       operationId: listSynchronizationSources
       responses:
@@ -138,33 +170,42 @@ paths:
             application/json:
               schema:
                 type: array
-                items: { $ref: '#/components/schemas/SynchronizationSource' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
+                items:
+                  $ref: '#/components/schemas/SynchronizationSource'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
     post:
-      tags: [Synchronization]
+      tags:
+      - Synchronization
       summary: Create a synchronization source
       operationId: createSynchronizationSource
       requestBody:
         required: true
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/SynchronizationSourceCreate' }
+            schema:
+              $ref: '#/components/schemas/SynchronizationSourceCreate'
       responses:
         '201':
           description: Synchronization source created.
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/SynchronizationSource' }
-        '400': { $ref: '#/components/responses/InvalidRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '409': { $ref: '#/components/responses/ResourceConflict' }
-        '422': { $ref: '#/components/responses/InvalidConfiguration' }
-
+              schema:
+                $ref: '#/components/schemas/SynchronizationSource'
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/ResourceConflict'
+        '422':
+          $ref: '#/components/responses/InvalidConfiguration'
   /api/v1/synchronization/sources/{sourceId}:
     parameters:
-      - $ref: '#/components/parameters/SourceId'
+    - $ref: '#/components/parameters/SourceId'
     get:
-      tags: [Synchronization]
+      tags:
+      - Synchronization
       summary: Get a synchronization source
       operationId: getSynchronizationSource
       responses:
@@ -172,41 +213,56 @@ paths:
           description: Synchronization source information.
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/SynchronizationSource' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '404': { $ref: '#/components/responses/SourceNotFound' }
+              schema:
+                $ref: '#/components/schemas/SynchronizationSource'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/SourceNotFound'
     patch:
-      tags: [Synchronization]
+      tags:
+      - Synchronization
       summary: Update a synchronization source
       operationId: updateSynchronizationSource
       requestBody:
         required: true
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/SynchronizationSourceUpdate' }
+            schema:
+              $ref: '#/components/schemas/SynchronizationSourceUpdate'
       responses:
         '200':
           description: Synchronization source updated.
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/SynchronizationSource' }
-        '400': { $ref: '#/components/responses/InvalidRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '404': { $ref: '#/components/responses/SourceNotFound' }
-        '422': { $ref: '#/components/responses/InvalidConfiguration' }
+              schema:
+                $ref: '#/components/schemas/SynchronizationSource'
+        '400':
+          $ref: '#/components/responses/InvalidRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/SourceNotFound'
+        '422':
+          $ref: '#/components/responses/InvalidConfiguration'
     delete:
-      tags: [Synchronization]
+      tags:
+      - Synchronization
       summary: Delete a synchronization source
       operationId: deleteSynchronizationSource
       responses:
-        '204': { description: Source deleted. }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '404': { $ref: '#/components/responses/SourceNotFound' }
-        '409': { $ref: '#/components/responses/ResourceConflict' }
-
+        '204':
+          description: Source deleted.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/SourceNotFound'
+        '409':
+          $ref: '#/components/responses/ResourceConflict'
   /api/v1/alarms:
     get:
-      tags: [Alarms]
+      tags:
+      - Alarms
       summary: List alarms
       operationId: listAlarms
       responses:
@@ -216,14 +272,16 @@ paths:
             application/json:
               schema:
                 type: array
-                items: { $ref: '#/components/schemas/Alarm' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-
+                items:
+                  $ref: '#/components/schemas/Alarm'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
   /api/v1/alarms/{alarmId}:
     parameters:
-      - $ref: '#/components/parameters/AlarmId'
+    - $ref: '#/components/parameters/AlarmId'
     get:
-      tags: [Alarms]
+      tags:
+      - Alarms
       summary: Get an alarm
       operationId: getAlarm
       responses:
@@ -231,15 +289,18 @@ paths:
           description: Alarm information.
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Alarm' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '404': { $ref: '#/components/responses/AlarmNotFound' }
-
+              schema:
+                $ref: '#/components/schemas/Alarm'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/AlarmNotFound'
   /api/v1/alarms/{alarmId}/acknowledge:
     parameters:
-      - $ref: '#/components/parameters/AlarmId'
+    - $ref: '#/components/parameters/AlarmId'
     post:
-      tags: [Alarms]
+      tags:
+      - Alarms
       summary: Acknowledge an alarm
       operationId: acknowledgeAlarm
       responses:
@@ -247,16 +308,20 @@ paths:
           description: Alarm acknowledged.
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Alarm' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '404': { $ref: '#/components/responses/AlarmNotFound' }
-        '409': { $ref: '#/components/responses/ResourceConflict' }
-
+              schema:
+                $ref: '#/components/schemas/Alarm'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/AlarmNotFound'
+        '409':
+          $ref: '#/components/responses/ResourceConflict'
   /api/v1/alarms/{alarmId}/clear:
     parameters:
-      - $ref: '#/components/parameters/AlarmId'
+    - $ref: '#/components/parameters/AlarmId'
     post:
-      tags: [Alarms]
+      tags:
+      - Alarms
       summary: Clear an alarm
       operationId: clearAlarm
       responses:
@@ -264,185 +329,362 @@ paths:
           description: Alarm cleared.
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Alarm' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '404': { $ref: '#/components/responses/AlarmNotFound' }
-        '409': { $ref: '#/components/responses/ResourceConflict' }
-
+              schema:
+                $ref: '#/components/schemas/Alarm'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/AlarmNotFound'
+        '409':
+          $ref: '#/components/responses/ResourceConflict'
 components:
   parameters:
     DeviceId:
       name: deviceId
       in: path
       required: true
-      schema: { type: string }
+      schema:
+        type: string
       description: Unique identifier of the monitored device.
     SourceId:
       name: sourceId
       in: path
       required: true
-      schema: { type: string }
+      schema:
+        type: string
       description: Unique identifier of the synchronization source.
     AlarmId:
       name: alarmId
       in: path
       required: true
-      schema: { type: string }
+      schema:
+        type: string
       description: Unique identifier of the alarm.
-
   schemas:
     Device:
       type: object
-      required: [deviceId, name, status]
+      required:
+      - deviceId
+      - name
+      - type
+      - managementAddress
+      - status
       properties:
-        deviceId: { type: string }
-        name: { type: string }
+        deviceId:
+          type: string
+          description: Unique identifier of the network device.
+          example: edge-001
+        name:
+          type: string
+          description: Human-readable name used to identify the device.
+          example: Edge Site 001
+        type:
+          type: string
+          description: Type of network device managed by EdgeSync. Supported device
+            types are not yet formally enumerated.
+          example: EDGE_ROUTER
+        managementAddress:
+          type: string
+          description: Network address used by EdgeSync to communicate with the device
+            for management purposes.
+          example: 192.0.2.10
         status:
           type: string
-          enum: [ONLINE, OFFLINE, UNKNOWN]
-          description: Device-management status; separate from Synchronization State.
-        type: { type: string }
-        address: { type: string }
-
+          description: Current device-management connectivity status observed by EdgeSync.
+            Proposed MVP values are ONLINE, OFFLINE, and UNKNOWN.
+          enum:
+          - ONLINE
+          - OFFLINE
+          - UNKNOWN
+          example: ONLINE
     DeviceCreate:
       type: object
-      required: [name, address]
+      required:
+      - name
+      - type
+      - managementAddress
       properties:
-        name: { type: string }
-        type: { type: string }
-        address: { type: string }
-
+        name:
+          type: string
+          description: Human-readable name used to identify the device.
+          example: Edge Site 001
+        type:
+          type: string
+          description: Type of network device managed by EdgeSync.
+          example: EDGE_ROUTER
+        managementAddress:
+          type: string
+          description: Network address used by EdgeSync to communicate with the device
+            for management purposes.
+          example: 192.0.2.10
     DeviceUpdate:
       type: object
       properties:
-        name: { type: string }
-        address: { type: string }
-
+        name:
+          type: string
+          description: Human-readable name used to identify the device.
+          example: Edge Site 001
+        type:
+          type: string
+          description: Type of network device managed by EdgeSync.
+          example: EDGE_ROUTER
+        managementAddress:
+          type: string
+          description: Network address used by EdgeSync to communicate with the device
+            for management purposes.
+          example: 192.0.2.10
     SynchronizationStatus:
       type: object
-      required: [deviceId, state, source, lastUpdated]
+      required:
+      - deviceId
+      - state
+      - source
+      - lastUpdated
       properties:
-        deviceId: { type: string }
-        state: { $ref: '#/components/schemas/SynchronizationState' }
+        deviceId:
+          type: string
+        state:
+          $ref: '#/components/schemas/SynchronizationState'
         source:
-          type: [string, 'null']
-          description: Current active synchronization source ID; null when none is available.
+          type:
+          - string
+          - 'null'
+          description: Current active synchronization source ID; null when none is
+            available.
         offsetNs:
-          type: [integer, 'null']
+          type:
+          - integer
+          - 'null'
           description: Estimated clock offset in nanoseconds.
         frequencyOffsetPpb:
-          type: [number, 'null']
+          type:
+          - number
+          - 'null'
           description: Frequency offset in parts per billion.
         jitterNs:
-          type: [integer, 'null']
+          type:
+          - integer
+          - 'null'
           description: Synchronization timing variation in nanoseconds.
         lastUpdated:
           type: string
           format: date-time
-
+      description: Current synchronization information for one monitored device. See
+        docs/reference/monitoring-data-model.md.
     SynchronizationState:
       type: string
-      enum: [LOCKED, HOLDOVER, FREERUN, FAILED]
-
+      enum:
+      - LOCKED
+      - HOLDOVER
+      - FREERUN
+      - FAILED
+      description: Canonical EdgeSync synchronization state. See docs/concepts/synchronization-states.md.
     SynchronizationSource:
       type: object
-      required: [id, name, type, status, priority]
+      required:
+      - id
+      - name
+      - type
+      - status
+      - priority
       properties:
-        id: { type: string }
-        name: { type: string }
-        type: { $ref: '#/components/schemas/SynchronizationSourceType' }
-        status: { $ref: '#/components/schemas/SourceStatus' }
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          $ref: '#/components/schemas/SynchronizationSourceType'
+        status:
+          $ref: '#/components/schemas/SourceStatus'
         priority:
           type: integer
           minimum: 1
-
+        address:
+          type: string
+          description: Network address of the synchronization source.
+          example: 192.0.2.20
+      description: Configured synchronization source resource. See docs/concepts/synchronization-sources.md.
     SynchronizationSourceCreate:
       type: object
-      required: [id, name, type, priority]
+      required:
+      - id
+      - name
+      - type
+      - address
+      - priority
       properties:
-        id: { type: string }
-        name: { type: string }
-        type: { $ref: '#/components/schemas/SynchronizationSourceType' }
-        priority: { type: integer, minimum: 1 }
-
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          $ref: '#/components/schemas/SynchronizationSourceType'
+        priority:
+          type: integer
+          minimum: 1
+        address:
+          type: string
+          description: Network address of the synchronization source.
+          example: 192.0.2.20
     SynchronizationSourceUpdate:
       type: object
       properties:
-        name: { type: string }
-        priority: { type: integer, minimum: 1 }
-
+        name:
+          type: string
+        priority:
+          type: integer
+          minimum: 1
+        address:
+          type: string
+          description: Network address of the synchronization source.
+          example: 192.0.2.20
     SynchronizationSourceType:
       type: string
-      enum: [PTP, NTP]
+      enum:
+      - PTP
+      - NTP
       description: PTP represents a PTP Grandmaster; NTP represents an NTP Server.
-
     SourceStatus:
       type: string
-      enum: [AVAILABLE, UNAVAILABLE, UNKNOWN]
-
+      enum:
+      - AVAILABLE
+      - UNAVAILABLE
+      - UNKNOWN
     Alarm:
       type: object
-      required: [alarmId, code, message, status, createdAt]
+      required:
+      - alarmId
+      - deviceId
+      - code
+      - severity
+      - status
+      - message
+      - createdAt
+      - updatedAt
       properties:
-        alarmId: { type: string }
-        code: { type: string }
-        message: { type: string }
-        status:
+        alarmId:
           type: string
-          enum: [ACTIVE, ACKNOWLEDGED, CLEARED]
-        deviceId: { type: string }
+          description: Unique identifier of this alarm instance.
+          example: alarm-1001
+        deviceId:
+          type: string
+          description: Identifier of the affected network device.
+          example: edge-001
+        sourceId:
+          type:
+          - string
+          - 'null'
+          description: Identifier of the related synchronization source, when the
+            alarm is source-related.
+          example: ptp-gm-01
+        code:
+          type: string
+          description: Stable machine-readable identifier for the alarm condition.
+          example: SYNC_SOURCE_UNAVAILABLE
         severity:
           type: string
-          enum: [CRITICAL, MAJOR, MINOR, WARNING]
-        createdAt: { type: string, format: date-time }
-        acknowledgedAt: { type: [string, 'null'], format: date-time }
-        clearedAt: { type: [string, 'null'], format: date-time }
-
+          description: Proposed severity classification for the alarm.
+          enum:
+          - CRITICAL
+          - MAJOR
+          - MINOR
+          - WARNING
+          example: MAJOR
+        status:
+          type: string
+          description: Current lifecycle status of the alarm.
+          enum:
+          - ACTIVE
+          - ACKNOWLEDGED
+          - CLEARED
+          example: ACTIVE
+        message:
+          type: string
+          description: Human-readable description of the alarm condition.
+          example: The configured synchronization source is unavailable.
+        createdAt:
+          type: string
+          format: date-time
+          description: Time when the alarm instance was created.
+          example: '2026-09-08T08:25:00Z'
+        updatedAt:
+          type: string
+          format: date-time
+          description: Time when the alarm resource was most recently updated.
+          example: '2026-09-08T08:25:00Z'
+        acknowledgedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: Time when a user acknowledged the alarm. Null until acknowledgement
+            occurs.
+        clearedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: Time when the alarm condition was cleared. Null until the alarm
+            is cleared.
     Error:
       type: object
-      required: [error]
+      required:
+      - error
       properties:
         error:
           type: object
-          required: [code, message]
+          required:
+          - code
+          - message
           properties:
-            code: { type: string }
-            message: { type: string }
-            details: { type: [string, 'null'] }
-
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              type:
+              - string
+              - 'null'
   responses:
     InvalidRequest:
       description: Request is invalid.
       content:
         application/json:
-          schema: { $ref: '#/components/schemas/Error' }
+          schema:
+            $ref: '#/components/schemas/Error'
     Unauthorized:
       description: Authentication is required or credentials are invalid.
       content:
         application/json:
-          schema: { $ref: '#/components/schemas/Error' }
+          schema:
+            $ref: '#/components/schemas/Error'
     DeviceNotFound:
       description: Device was not found.
       content:
         application/json:
-          schema: { $ref: '#/components/schemas/Error' }
+          schema:
+            $ref: '#/components/schemas/Error'
     SourceNotFound:
       description: Synchronization source was not found.
       content:
         application/json:
-          schema: { $ref: '#/components/schemas/Error' }
+          schema:
+            $ref: '#/components/schemas/Error'
     AlarmNotFound:
       description: Alarm was not found.
       content:
         application/json:
-          schema: { $ref: '#/components/schemas/Error' }
+          schema:
+            $ref: '#/components/schemas/Error'
     ResourceConflict:
       description: Operation conflicts with the current resource state.
       content:
         application/json:
-          schema: { $ref: '#/components/schemas/Error' }
+          schema:
+            $ref: '#/components/schemas/Error'
     InvalidConfiguration:
       description: Configuration is not acceptable.
       content:
         application/json:
-          schema: { $ref: '#/components/schemas/Error' }
+          schema:
+            $ref: '#/components/schemas/Error'
